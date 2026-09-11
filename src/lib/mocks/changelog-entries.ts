@@ -1,0 +1,128 @@
+import type { ChangelogEntry, Workspace, ConnectedRepo } from "@/lib/types";
+
+/** Sample changelog entries mirroring `supabase/seed.sql` — for component & page dev. */
+export const sampleChangelogEntries: ChangelogEntry[] = [
+  {
+    id: "30000000-0000-0000-0000-000000000001",
+    workspace_id: "10000000-0000-0000-0000-000000000001",
+    repo_id: "20000000-0000-0000-0000-000000000001",
+    github_pr_number: 142,
+    pr_title: "Add dark mode with system preference detection",
+    pr_description:
+      "Adds a theme toggle, persists the choice in localStorage, and respects prefers-color-scheme on first visit.",
+    author_username: "adalovelace",
+    author_avatar_url: "https://avatars.githubusercontent.com/u/12345?v=4",
+    labels: ["feature", "ui"],
+    merged_at: "2026-09-09T14:22:31.000Z",
+    category: "feature",
+    summary_markdown: "### Dark mode\n\n- Theme toggle in the top bar\n- Picks up the system preference on first visit",
+    published: true,
+    created_at: "2026-09-09T14:22:31.000Z",
+  },
+  {
+    id: "30000000-0000-0000-0000-000000000002",
+    workspace_id: "10000000-0000-0000-0000-000000000001",
+    repo_id: "20000000-0000-0000-0000-000000000001",
+    github_pr_number: 141,
+    pr_title: "Fix flash of unstyled content on dashboard load",
+    pr_description:
+      "The dashboard shell rendered before the CSS bundle finished loading, causing a visible flash.",
+    author_username: "ababbage",
+    author_avatar_url: "https://avatars.githubusercontent.com/u/54321?v=4",
+    labels: ["bug", "perf"],
+    merged_at: "2026-09-06T08:41:12.000Z",
+    category: "fix",
+    summary_markdown: "Fixed a flash of unstyled content (FOUC) on dashboard load by inlining critical CSS.",
+    published: true,
+    created_at: "2026-09-06T08:41:12.000Z",
+  },
+  {
+    id: "30000000-0000-0000-0000-000000000003",
+    workspace_id: "10000000-0000-0000-0000-000000000001",
+    repo_id: "20000000-0000-0000-0000-000000000001",
+    github_pr_number: 140,
+    pr_title: "Speed up search with server-side filtering",
+    pr_description:
+      "Moves search filtering from the browser to the API, cutting result latency by ~60% on large workspaces.",
+    author_username: "gboole",
+    author_avatar_url: "https://avatars.githubusercontent.com/u/24680?v=4",
+    labels: ["improvement", "search"],
+    merged_at: "2026-09-02T17:05:59.000Z",
+    category: "improvement",
+    summary_markdown: "Search is now filtered server-side, cutting result latency by about 60%.",
+    published: true,
+    created_at: "2026-09-02T17:05:59.000Z",
+  },
+  {
+    id: "30000000-0000-0000-0000-000000000004",
+    workspace_id: "10000000-0000-0000-0000-000000000001",
+    repo_id: "20000000-0000-0000-0000-000000000001",
+    github_pr_number: 138,
+    pr_title: "Export changelog as Markdown",
+    pr_description:
+      "Adds an Export button that downloads the current changelog as a single Markdown file.",
+    author_username: "ahertz",
+    author_avatar_url: "https://avatars.githubusercontent.com/u/13579?v=4",
+    labels: ["feature", "api"],
+    merged_at: "2026-08-25T11:30:00.000Z",
+    category: "feature",
+    summary_markdown: "### Export as Markdown\n\n- New **Export** button on the changelog page",
+    published: true,
+    created_at: "2026-08-25T11:30:00.000Z",
+  },
+  {
+    id: "30000000-0000-0000-0000-000000000005",
+    workspace_id: "10000000-0000-0000-0000-000000000001",
+    repo_id: "20000000-0000-0000-0000-000000000001",
+    github_pr_number: 135,
+    pr_title: "Fix duplicate entries when webhook retries",
+    pr_description:
+      "Webhook retries from GitHub could create duplicate changelog entries.",
+    author_username: "kzuse",
+    author_avatar_url: "https://avatars.githubusercontent.com/u/97531?v=4",
+    labels: ["bug", "webhooks"],
+    merged_at: "2026-08-17T20:14:22.000Z",
+    category: "fix",
+    summary_markdown: "Fixed duplicate changelog entries caused by GitHub webhook retries — processing is now idempotent per delivery.",
+    published: true,
+    created_at: "2026-08-17T20:14:22.000Z",
+  },
+  {
+    id: "30000000-0000-0000-0000-000000000006",
+    workspace_id: "10000000-0000-0000-0000-000000000001",
+    repo_id: "20000000-0000-0000-0000-000000000001",
+    github_pr_number: 133,
+    pr_title: "Reduce bundle size with route-level code splitting",
+    pr_description: "Vendor chunks are now split per route, cutting the initial bundle by 32%.",
+    author_username: "ghopper",
+    author_avatar_url: "https://avatars.githubusercontent.com/u/86420?v=4",
+    labels: ["improvement", "perf"],
+    merged_at: "2026-08-08T13:47:08.000Z",
+    category: "improvement",
+    summary_markdown: "Route-level code splitting shrinks the initial bundle by 32% — faster first paint.",
+    published: true,
+    created_at: "2026-08-08T13:47:08.000Z",
+  },
+];
+
+/** Sample workspace used alongside the fixtures. */
+export const sampleWorkspace: Workspace = {
+  id: "10000000-0000-0000-0000-000000000001",
+  slug: "acme",
+  name: "Acme Inc.",
+  owner_id: "00000000-0000-0000-0000-000000000001",
+  custom_cname: null,
+  brand_color: "#6366f1",
+  created_at: "2026-03-11T00:00:00.000Z",
+};
+
+/** Sample connected repo used alongside the fixtures. */
+export const sampleConnectedRepo: ConnectedRepo = {
+  id: "20000000-0000-0000-0000-000000000001",
+  workspace_id: "10000000-0000-0000-0000-000000000001",
+  github_repo_id: 482910238,
+  full_name: "acme-inc/acme-webapp",
+  owner: "acme-inc",
+  webhook_enabled: true,
+  created_at: "2026-04-11T00:00:00.000Z",
+};
