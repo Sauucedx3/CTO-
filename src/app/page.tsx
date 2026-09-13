@@ -12,7 +12,7 @@ export default function Home() {
   return (
     <main className="flex flex-1 flex-col items-center justify-center px-6 py-24">
       <Badge variant="secondary" className="mb-6">
-        Foundation — milestone 1 of 6
+        Foundation — milestone 2 of 6
       </Badge>
       <h1 className="text-balance text-center text-4xl font-semibold tracking-tight sm:text-5xl">
         ChangelogSync
@@ -31,8 +31,9 @@ export default function Home() {
       </div>
       <Separator className="my-10 max-w-md" />
       <p className="text-balance text-center text-sm text-muted-foreground">
-        GitHub OAuth, repo dashboard, webhook listener, AI summaries and the
-        public changelog timeline land in the next milestones.
+        Sign in with GitHub and connect your repositories today. The webhook
+        listener, AI summaries, public changelog timeline, embeddable widget
+        and billing land in the next milestones.
       </p>
     </main>
   );
