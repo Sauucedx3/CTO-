@@ -29,6 +29,10 @@ export interface Profile {
   display_name: string | null;
   plan: Plan;
   stripe_customer_id: string | null;
+  /** GitHub login (set by the GitHub OAuth callback; used to find the account on re-login). */
+  github_login: string | null;
+  /** GitHub avatar URL (set by the GitHub OAuth callback). */
+  avatar_url: string | null;
   created_at: string;
 }
 
@@ -120,3 +124,51 @@ export type NewChangelogEntry = Pick<ChangelogEntry, "workspace_id" | "pr_title"
       "id" | "workspace_id" | "pr_title" | "created_at"
     >
   >;
+
+// ---------------------------------------------------------------------------
+// GitHub API types
+// ---------------------------------------------------------------------------
+
+/**
+ * A GitHub repository as surfaced to the dashboard. Mirrors the fields of the
+ * `GET /user/repos` REST response that ChangelogSync actually uses (see
+ * `src/lib/github.ts`), so call sites never touch raw Octokit generics.
+ */
+export interface GitHubRepo {
+  id: number;
+  full_name: string;
+  private: boolean;
+  html_url: string;
+  description: string | null;
+  owner: { login: string };
+  default_branch: string;
+}
+
+/** `github_tokens` table — server-only storage of GitHub OAuth tokens. */
+export interface GitHubToken {
+  user_id: string;
+  github_id: number;
+  github_login: string;
+  access_token: string;
+  scope: string | null;
+  fetched_at: string;
+  updated_at: string;
+}
+
+/** The authenticated GitHub user from `GET /user` (OAuth callback). */
+export interface GitHubApiUser {
+  id: number;
+  login: string;
+  name: string | null;
+  avatar_url: string;
+  html_url: string;
+}
+
+/** Response shape of GitHub's OAuth token endpoint (application/json). */
+export interface GitHubTokenResponse {
+  access_token?: string;
+  scope?: string;
+  token_type?: string;
+  error?: string;
+  error_description?: string;
+}
