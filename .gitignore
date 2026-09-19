@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# keyless file store data (default lives in /home/team/shared/data, never committed)
+/data/
+*.token
