@@ -8,7 +8,10 @@
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit",
-    "seed": "bun scripts/seed.ts"
+    "seed": "bun scripts/seed.ts",
+    "seed:reset": "bun scripts/seed.ts --reset",
+    "store:smoke": "bun scripts/store-smoke.ts",
+    "admin:token": "bun scripts/ensure-admin-token.ts"
   },
   "dependencies": {
     "@octokit/rest": "^22.0.1",
