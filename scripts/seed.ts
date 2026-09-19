@@ -21,7 +21,6 @@ import {
   createEntry,
   createWorkspace,
   ensureDataDir,
-  getDataDir,
   getEntriesFilePath,
   listEntries,
   type Category,
