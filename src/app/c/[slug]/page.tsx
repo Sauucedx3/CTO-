@@ -1,8 +1,10 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, Sparkles } from "lucide-react";
 import { ChangelogTimeline } from "@/components/changelog/changelog-timeline";
+import { TimelineSkeleton } from "@/components/changelog/timeline-skeleton";
 import { Badge } from "@/components/ui/badge";
 import {
   DEFAULT_BRAND_COLOR,
@@ -59,6 +61,35 @@ export async function generateMetadata({
   };
 }
 
+/** Entries are read from the file store inside a Suspense boundary so the
+ * workspace check above can still answer 404 for an unknown slug. */
+async function TimelineSection({
+  slug,
+  brandColor,
+  workspaceName,
+}: {
+  slug: string;
+  brandColor: string;
+  workspaceName: string;
+}) {
+  const entries = await listPublishedEntries(slug);
+
+  return (
+    <ChangelogTimeline
+      entries={entries.map((entry) => ({
+        id: entry.id,
+        title: entry.title,
+        body: entry.body,
+        category: entry.category,
+        tags: entry.tags,
+        created_at: entry.created_at,
+      }))}
+      brandColor={brandColor}
+      workspaceName={workspaceName}
+    />
+  );
+}
+
 export default async function WorkspaceChangelogPage({
   params,
 }: WorkspacePageProps) {
@@ -66,10 +97,8 @@ export default async function WorkspaceChangelogPage({
   const workspace = await readWorkspace(slug);
   if (!workspace) notFound();
 
-  const entries = await listPublishedEntries(workspace.slug);
   const brandColor = normalizeBrandColor(workspace.brand_color);
   const brandText = readableTextColor(brandColor);
-  const latest = entries[0]?.created_at;
 
   return (
     <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col px-4 pb-20 sm:px-6">
@@ -114,29 +143,20 @@ export default async function WorkspaceChangelogPage({
               Product updates, improvements and fixes — published as they ship.
             </p>
             <p className="mt-3 text-xs text-muted-foreground">
-              {entries.length === 0
-                ? "No updates published yet"
-                : `${entries.length} update${entries.length === 1 ? "" : "s"}${
-                    latest ? ` · latest ${latest.slice(0, 10)}` : ""
-                  }`}
+              Every update, newest first. No account needed.
             </p>
           </div>
         </div>
       </header>
 
       <div className="mt-8">
-        <ChangelogTimeline
-          entries={entries.map((entry) => ({
-            id: entry.id,
-            title: entry.title,
-            body: entry.body,
-            category: entry.category,
-            tags: entry.tags,
-            created_at: entry.created_at,
-          }))}
-          brandColor={brandColor}
-          workspaceName={workspace.name}
-        />
+        <Suspense fallback={<TimelineSkeleton />}>
+          <TimelineSection
+            slug={workspace.slug}
+            brandColor={brandColor}
+            workspaceName={workspace.name}
+          />
+        </Suspense>
       </div>
 
       <footer className="mt-14 border-t pt-6 text-xs text-muted-foreground">
