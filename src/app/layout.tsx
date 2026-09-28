@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     template: "%s — ChangelogSync",
   },
   description:
-    "Turn merged GitHub pull requests into polished, public release notes — automatically.",
+    "A clean, searchable public changelog for your product — no sign-up required for your customers.",
 };
 
 export default function RootLayout({
