@@ -225,7 +225,7 @@ export function AdminConsole({ workspaces, initialWorkspace, categories }: Admin
 
   const entries = useMemo(() => data?.entries ?? [], [data]);
   const drafts = data?.drafts ?? 0;
-  const loading = token !== null && token !== undefined && data === null;
+  const loading = data === null;
   const publishedCount = useMemo(() => entries.filter((e) => e.published).length, [entries]);
   const visibleEntries = useMemo(
     () =>
@@ -366,18 +366,14 @@ export function AdminConsole({ workspaces, initialWorkspace, categories }: Admin
   }
 
   // -------------------------------------------------------------------------
-  // Token gate (and the pre-hydration skeleton)
+  // Token gate
+  //
+  // `undefined` (not read yet, i.e. the server render) and `null` (no token)
+  // both render the gate: that keeps the server HTML honest for an anonymous
+  // visitor instead of making them watch a skeleton flash. An unlocked tab
+  // swaps to the console during hydration, before the first paint is useful.
   // -------------------------------------------------------------------------
-  if (token === undefined) {
-    return (
-      <div className="space-y-4" aria-busy="true">
-        <Skeleton className="h-28 w-full rounded-xl" />
-        <Skeleton className="h-40 w-full rounded-xl" />
-      </div>
-    );
-  }
-
-  if (token === null) {
+  if (token === undefined || token === null) {
     return (
       <div className="rounded-2xl border bg-card p-6 sm:p-8">
         <div className="flex items-start gap-3">
