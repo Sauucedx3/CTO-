@@ -1,84 +1,128 @@
-import Link from "next/link";
-import { ArrowRight, Sparkles } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
+import type { Metadata } from "next";
+import { CategoryShowcaseSection } from "@/components/landing/category-showcase";
+import { LandingHero } from "@/components/landing/hero";
+import { HowItWorksSection } from "@/components/landing/how-it-works";
+import { LiveDemoSection } from "@/components/landing/live-demo";
+import { PricingSection } from "@/components/landing/pricing";
+import { SiteFooter } from "@/components/landing/site-footer";
+import { SiteHeader } from "@/components/landing/site-header";
+import type {
+  DemoData,
+  DemoWorkspace,
+  PreviewEntry,
+} from "@/components/landing/types";
+import { DEFAULT_BRAND_COLOR, normalizeBrandColor } from "@/lib/changelog/format";
+import { listPublishedEntries, listWorkspaces } from "@/lib/store";
 
-/** Sample workspaces seeded in the file store — always available, no sign-up. */
-const SAMPLE_CHANGELOGS = [
-  { slug: "acme", name: "Acme Analytics", blurb: "Dashboards, saved views and query tips." },
-  { slug: "demo", name: "Demo Product", blurb: "A second product timeline, different brand colour." },
-] as const;
+// The landing advertises live data (entry counts, newest headlines), so it
+// reads the file store per request — same as the public /c/[slug] timeline.
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
 
-export default function Home() {
+export const metadata: Metadata = {
+  title: {
+    absolute: "ChangelogSync — public changelogs your customers will read",
+  },
+  description:
+    "ChangelogSync turns your product updates into one clean, searchable, category-tagged timeline at /c/your-product. Free to start, no sign-up for readers.",
+  alternates: { canonical: "/" },
+};
+
+/** Copy used only when a workspace is missing from the built-in blurbs map. */
+const DEFAULT_BLURB =
+  "Product updates, improvements and fixes — published as they ship.";
+
+const BLURBS: Record<string, string> = {
+  acme: "Dashboards, saved views and the query tips behind them.",
+  demo: "A second product timeline running its own brand colour.",
+};
+
+/**
+ * Shown only when the store cannot be read (fresh machine, empty data dir).
+ * Links stay real; counts and "newest entry" are omitted rather than faked.
+ */
+const FALLBACK_WORKSPACES: DemoWorkspace[] = [
+  {
+    slug: "acme",
+    name: "Acme Analytics",
+    blurb: BLURBS.acme,
+    brandColor: DEFAULT_BRAND_COLOR,
+    entryCount: null,
+    latestTitle: null,
+    latestDate: null,
+  },
+  {
+    slug: "demo",
+    name: "Demo Product",
+    blurb: BLURBS.demo,
+    brandColor: "#0ea5e9",
+    entryCount: null,
+    latestTitle: null,
+    latestDate: null,
+  },
+];
+
+async function loadDemoData(): Promise<DemoData> {
+  try {
+    const workspaces = await listWorkspaces();
+
+    const demoWorkspaces = await Promise.all(
+      workspaces.map(async (workspace): Promise<DemoWorkspace> => {
+        const entries = await listPublishedEntries(workspace.slug);
+        const latest = entries[0];
+        return {
+          slug: workspace.slug,
+          name: workspace.name,
+          blurb: BLURBS[workspace.slug] ?? DEFAULT_BLURB,
+          brandColor: normalizeBrandColor(workspace.brand_color),
+          entryCount: entries.length,
+          latestTitle: latest?.title ?? null,
+          latestDate: latest?.created_at ?? null,
+        };
+      }),
+    );
+
+    const firstWithEntries = demoWorkspaces.find(
+      (workspace) => workspace.entryCount !== null && workspace.entryCount > 0,
+    );
+    const previewEntries: PreviewEntry[] = firstWithEntries
+      ? (
+          await listPublishedEntries(firstWithEntries.slug, 3)
+        ).map((entry) => ({
+          title: entry.title,
+          category: entry.category,
+          created_at: entry.created_at,
+        }))
+      : [];
+
+    return { workspaces: demoWorkspaces, previewEntries };
+  } catch (error) {
+    // A broken or absent store must never take the marketing page down.
+    console.error("Landing page could not read the changelog store:", error);
+    return { workspaces: [], previewEntries: [] };
+  }
+}
+
+export default async function Home() {
+  const { workspaces, previewEntries } = await loadDemoData();
+  const demos = workspaces.length > 0 ? workspaces : FALLBACK_WORKSPACES;
+  const previewWorkspace = demos[0];
+
   return (
-    <main className="flex flex-1 flex-col items-center justify-center px-6 py-24">
-      <Badge variant="secondary" className="mb-6">
-        Public changelog — live now
-      </Badge>
-      <h1 className="text-balance text-center text-4xl font-semibold tracking-tight sm:text-5xl">
-        ChangelogSync
-      </h1>
-      <p className="mt-4 max-w-xl text-pretty text-center text-muted-foreground">
-        A clean, searchable product-update timeline for your customers. No
-        sign-up for them, nothing to configure — your changelog lives at one
-        public link.
-      </p>
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-        <Button asChild>
-          <Link href="/c/acme">
-            <Sparkles className="h-4 w-4" />
-            See a live changelog
-          </Link>
-        </Button>
-        <Button asChild variant="outline">
-          <Link href="/dashboard">Open the dashboard</Link>
-        </Button>
-      </div>
-
-      <Separator className="my-10 max-w-md" />
-
-      <section
-        aria-labelledby="samples-heading"
-        className="w-full max-w-2xl text-left"
-      >
-        <h2
-          id="samples-heading"
-          className="text-xs font-semibold tracking-[0.14em] text-muted-foreground uppercase"
-        >
-          Sample changelogs
-        </h2>
-        <ul className="mt-4 grid gap-3 sm:grid-cols-2">
-          {SAMPLE_CHANGELOGS.map((sample) => (
-            <li key={sample.slug}>
-              <Link
-                href={`/c/${sample.slug}`}
-                className="group flex h-full flex-col justify-between rounded-xl border bg-card p-5 transition-colors hover:border-foreground/30 hover:bg-muted/40"
-              >
-                <div>
-                  <p className="font-medium">{sample.name}</p>
-                  <p className="mt-1 text-sm text-pretty text-muted-foreground">
-                    {sample.blurb}
-                  </p>
-                </div>
-                <span className="mt-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground transition-colors group-hover:text-foreground">
-                  /c/{sample.slug}
-                  <ArrowRight
-                    aria-hidden="true"
-                    className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5"
-                  />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <p className="mt-10 max-w-xl text-balance text-center text-sm text-muted-foreground">
-        Category tags, instant search and month-grouped release notes work with
-        no account and no external services. Automation from GitHub, custom
-        domains, an embeddable widget and billing are the Pro roadmap.
-      </p>
-    </main>
+    <div className="flex min-h-full flex-1 flex-col">
+      <SiteHeader />
+      <main className="flex flex-1 flex-col">
+        <LandingHero
+          previewEntries={previewEntries}
+          previewSlug={previewWorkspace.slug}
+          previewName={previewWorkspace.name}
+        />
+        <LiveDemoSection workspaces={demos} />
+        <HowItWorksSection />
+        <CategoryShowcaseSection />
+        <PricingSection />
+      </main>
+      <SiteFooter />
+    </div>
   );
 }
