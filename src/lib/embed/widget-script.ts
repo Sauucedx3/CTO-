@@ -163,8 +163,8 @@ export const EMBED_SCRIPT: string = String.raw`/*! ChangelogSync embed widget v$
 
   /**
    * The one place the workspace slug enters the widget.
-   * `data-workspace` wins, `?workspace=` is the fallback. A Pro gate added
-   * later either stops the script from being served or flips `allow` here.
+   * "data-workspace" wins, "?workspace=" is the fallback. A Pro gate added
+   * later either stops the script from being served or flips "allow" here.
    */
   function readConfig() {
     var script = findScript();
@@ -216,8 +216,11 @@ export const EMBED_SCRIPT: string = String.raw`/*! ChangelogSync embed widget v$
   /** Markdown-ish body -> single-line plain-text preview (no HTML ever). */
   function bodyPreview(markdown) {
     var text = String(markdown === null || markdown === undefined ? "" : markdown);
-    text = text.replace(/```[\s\S]*?```/g, " ");
-    text = text.replace(/`([^`]*)`/g, "$1");
+    var TICK = String.fromCharCode(96);
+    var FENCE = new RegExp(TICK + TICK + TICK + "[\\s\\S]*?" + TICK + TICK + TICK, "g");
+    var CODESPAN = new RegExp(TICK + "([^" + TICK + "]*)" + TICK, "g");
+    text = text.replace(FENCE, " ");
+    text = text.replace(/"([^"]*)"/g, "$1");
     text = text.replace(/!\[[^\]]*\]\([^)]*\)/g, " ");
     text = text.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1");
     text = text.replace(/^\s{0,3}#{1,6}\s+/gm, "");
