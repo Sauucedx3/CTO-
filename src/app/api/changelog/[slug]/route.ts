@@ -21,6 +21,12 @@ import {
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+/**
+ * This is a PUBLIC anonymous read API, and the /embed.js widget fetches it
+ * cross-origin from customer sites — CORS must allow any origin. The data is
+ * already public (anyone can GET /c/[slug] or this endpoint directly).
+ */
+const CORS_HEADERS = { "access-control-allow-origin": "*" } as const;
 const MAX_LIMIT = 100;
 
 export async function GET(
@@ -34,7 +40,7 @@ export async function GET(
   if (rawLimit !== null) {
     const parsed = Number.parseInt(rawLimit, 10);
     if (!Number.isInteger(parsed) || parsed < 1) {
-      return NextResponse.json({ error: "invalid_limit" }, { status: 400 });
+      return NextResponse.json({ error: "invalid_limit" }, { status: 400, headers: CORS_HEADERS });
     }
     limit = Math.min(parsed, MAX_LIMIT);
   }
@@ -42,16 +48,16 @@ export async function GET(
   try {
     const workspace = await getWorkspaceBySlug(slug);
     if (!workspace) {
-      return NextResponse.json({ error: "workspace_not_found" }, { status: 404 });
+      return NextResponse.json({ error: "workspace_not_found" }, { status: 404, headers: CORS_HEADERS });
     }
     const entries = await listPublishedEntries(workspace.slug, limit);
-    return NextResponse.json({ workspace, entries, count: entries.length });
+    return NextResponse.json({ workspace, entries, count: entries.length }, { headers: CORS_HEADERS });
   } catch (err) {
     if (err instanceof StoreValidationError) {
-      return NextResponse.json({ error: "invalid_slug", message: err.message }, { status: 400 });
+      return NextResponse.json({ error: "invalid_slug", message: err.message }, { status: 400, headers: CORS_HEADERS });
     }
     // A corrupt store must be visible, not silently 200-with-nothing.
     console.error(`GET /api/changelog/${slug} failed:`, err);
-    return NextResponse.json({ error: "store_unavailable" }, { status: 500 });
+    return NextResponse.json({ error: "store_unavailable" }, { status: 500, headers: CORS_HEADERS });
   }
 }
